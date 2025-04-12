@@ -1,12 +1,10 @@
 # TILE-GPT
 
+A next-gen tile map editor that blends natural language with precision level design.
+
 <p align="center">
   <img src="./tile-gpt.png" width="400">
 </p>
-
-# Tile-GPT
-
-  A next-gen tile map editor that blends natural language with precision level design.
 
 ## 🧙‍♂️ Why?
 
