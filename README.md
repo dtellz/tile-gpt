@@ -3,7 +3,7 @@
 A next-gen tile map editor that blends natural language with precision level design.
 
 <p align="center">
-  <img src="./tile-gpt.png" width="400">
+  <img src="./buildResources/icon.png" width="400">
 </p>
 
 ## 🧙‍♂️ Why?
