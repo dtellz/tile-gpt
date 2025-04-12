@@ -1,0 +1,115 @@
+.file-explorer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.explorer-header {
+  padding: 5px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.explorer-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 2px 5px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.action-button:hover {
+  background-color: var(--bg-hover);
+}
+
+.action-button.open-folder {
+  background-color: var(--accent-color);
+  padding: 3px 8px;
+}
+
+.action-button.open-folder:hover {
+  background-color: var(--accent-hover);
+}
+
+.workspace-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.file-list {
+  padding: 5px 0;
+  overflow: auto;
+  flex: 1;
+}
+
+.file-tree-item {
+  margin: 1px 0;
+}
+
+.file-item-header {
+  display: flex;
+  align-items: center;
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.file-item-header:hover {
+  background-color: var(--bg-hover);
+}
+
+.file-item-header.folder {
+  font-weight: 500;
+}
+
+.icon {
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+.file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loading-indicator {
+  padding: 5px 15px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.empty-state {
+  padding: 10px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.empty-folder {
+  padding: 2px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}

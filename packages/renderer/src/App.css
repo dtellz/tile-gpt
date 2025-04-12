@@ -1,42 +1,310 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --bg-tertiary: #333333;
+  --bg-active: #37373d;
+  --bg-hover: #2a2d2e;
+  --border-color: #474747;
+  --text-primary: #cccccc;
+  --text-secondary: #8a8a8a;
+  --accent-color: #0e639c;
+  --accent-hover: #1177bb;
+  --tab-active: #1e1e1e;
+  --tab-inactive: #2d2d2d;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* App Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-primary);
+}
+
+/* Top Bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 10px;
+}
+
+.app-title {
+  font-weight: bold;
+  margin-right: 20px;
+}
+
+.menu-bar {
+  display: flex;
+}
+
+.menu-item {
+  padding: 0 10px;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.menu-item:hover {
+  background-color: var(--bg-hover);
+}
+
+/* Main Content */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.left-sidebar {
+  width: 250px;
+}
+
+.right-sidebar {
+  width: 300px;
+  border-left: 1px solid var(--border-color);
+  border-right: none;
+}
+
+/* File Explorer */
+.file-explorer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: auto;
+}
+
+.explorer-header {
+  padding: 5px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-list {
+  padding: 5px 0;
+}
+
+.file-item {
+  margin: 1px 0;
+}
+
+.file-item-header {
+  display: flex;
+  align-items: center;
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.file-item-header:hover {
+  background-color: var(--bg-hover);
+}
+
+.file-item-header.folder {
+  font-weight: 500;
+}
+
+.icon {
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+.file-children {
+  margin-left: 15px;
+}
+
+/* Center Area */
+.center-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* Tabs */
+.tabs-container {
+  display: flex;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  height: 35px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 100%;
+  min-width: 120px;
+  max-width: 200px;
+  background-color: var(--tab-inactive);
+  border-right: 1px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.tab.active {
+  background-color: var(--tab-active);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+.tab-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 5px;
+  padding: 0 3px;
+}
+
+.tab-close:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+  border-radius: 3px;
+}
+
+/* Editor */
+.editor-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.map-editor {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  background-image: 
+    linear-gradient(45deg, #2c2c2c 25%, transparent 25%), 
+    linear-gradient(-45deg, #2c2c2c 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #2c2c2c 75%), 
+    linear-gradient(-45deg, transparent 75%, #2c2c2c 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.map-placeholder {
   text-align: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Properties Panel */
+.properties-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.panel-header {
+  padding: 5px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.panel-content {
+  padding: 10px;
+  overflow: auto;
+  flex: 1;
 }
 
-.card {
-  padding: 2em;
+.property-group {
+  margin-top: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
 }
 
-.read-the-docs {
-  color: #888;
+.property-group h4 {
+  padding: 5px 10px;
+  background-color: var(--bg-tertiary);
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.property-item {
+  display: flex;
+  padding: 5px 10px;
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+}
+
+.property-label {
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+.property-value {
+  flex: 2;
+}
+
+/* Status Bar */
+.status-bar {
+  height: 22px;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status-item {
+  margin-right: 15px;
 }

@@ -1,0 +1,61 @@
+.map-editor {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.map-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  background-image: 
+    linear-gradient(45deg, #2c2c2c 25%, transparent 25%), 
+    linear-gradient(-45deg, #2c2c2c 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #2c2c2c 75%), 
+    linear-gradient(-45deg, transparent 75%, #2c2c2c 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.map-placeholder,
+.map-loading,
+.map-error,
+.map-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  max-width: 80%;
+}
+
+.map-error {
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+.map-loading {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.map-info {
+  text-align: left;
+  min-width: 300px;
+}
+
+.map-info h3 {
+  margin-bottom: 10px;
+  color: var(--accent-color);
+}
+
+.map-info p {
+  margin: 5px 0;
+}
