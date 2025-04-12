@@ -13,6 +13,11 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
   const mapRef = useRef<TmxMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   
+  // State for panning
+  const [viewPosition, setViewPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  
   // Function to render the map using canvas
   const renderMap = (map: TmxMap) => {
     const canvas = canvasRef.current;
@@ -24,6 +29,10 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     // Clear the canvas
     ctx.fillStyle = '#1e1e1e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Apply the view position (panning)
+    ctx.save();
+    ctx.translate(viewPosition.x, viewPosition.y);
     
     // Draw a checkerboard pattern for the background
     ctx.fillStyle = '#2c2c2c';
@@ -91,6 +100,52 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     
     // Reset alpha
     ctx.globalAlpha = 1.0;
+    
+    // Restore the canvas context
+    ctx.restore();
+    
+    // Draw a mini-map or navigation indicator in the corner
+    drawNavigationIndicator(ctx, map, canvas.width, canvas.height);
+  };
+  
+  // Draw a small navigation indicator in the corner
+  const drawNavigationIndicator = (ctx: CanvasRenderingContext2D, map: TmxMap, canvasWidth: number, canvasHeight: number) => {
+    const indicatorSize = 100;
+    const padding = 10;
+    const x = canvasWidth - indicatorSize - padding;
+    const y = canvasHeight - indicatorSize - padding;
+    
+    // Draw indicator background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(x, y, indicatorSize, indicatorSize);
+    
+    // Calculate map dimensions
+    const mapWidth = map.width * map.tileWidth;
+    const mapHeight = map.height * map.tileHeight;
+    
+    // Calculate scale for the indicator
+    const scale = Math.min(indicatorSize / mapWidth, indicatorSize / mapHeight);
+    
+    // Draw map outline
+    ctx.strokeStyle = '#ffffff';
+    ctx.strokeRect(x, y, mapWidth * scale, mapHeight * scale);
+    
+    // Draw viewport rectangle
+    const viewportWidth = canvasWidth * scale;
+    const viewportHeight = canvasHeight * scale;
+    
+    // Calculate viewport position in the indicator
+    const viewportX = x - (viewPosition.x * scale);
+    const viewportY = y - (viewPosition.y * scale);
+    
+    // Draw viewport rectangle
+    ctx.strokeStyle = '#00ff00';
+    ctx.strokeRect(
+      Math.max(x, viewportX),
+      Math.max(y, viewportY),
+      Math.min(viewportWidth, indicatorSize),
+      Math.min(viewportHeight, indicatorSize)
+    );
   };
   
   // Set up canvas dimensions when they change
@@ -104,7 +159,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     if (mapRef.current) {
       renderMap(mapRef.current);
     }
-  }, [width, height]);
+  }, [width, height, viewPosition]);
   
   // Parse and render map when content changes
   useEffect(() => {
@@ -132,13 +187,57 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     );
   }
 
+  // Mouse event handlers for panning
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+  
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    
+    setViewPosition(prev => ({
+      x: prev.x + dx,
+      y: prev.y + dy
+    }));
+    
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+  
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+  
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    // Prevent the default scroll behavior
+    e.preventDefault();
+    
+    // Adjust the view position based on the wheel delta
+    setViewPosition(prev => ({
+      x: prev.x - e.deltaX,
+      y: prev.y - e.deltaY
+    }));
+  };
+  
   return (
     <canvas 
       ref={canvasRef} 
       className="map-renderer"
       width={width}
       height={height}
-      style={{ width: `${width}px`, height: `${height}px` }}
+      style={{ width: `${width}px`, height: `${height}px`, cursor: isDragging ? 'grabbing' : 'grab' }}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onWheel={handleWheel}
     />
   );
 };
