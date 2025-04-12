@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TabItem } from '../../types';
 import { readFile } from '../../utils/preload';
+import { MapRenderer } from './MapRenderer';
 import './MapEditor.css';
 
 interface MapEditorProps {
@@ -8,7 +9,6 @@ interface MapEditorProps {
 }
 
 export const MapEditor: React.FC<MapEditorProps> = ({ activeTab }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mapContent, setMapContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,9 +47,39 @@ export const MapEditor: React.FC<MapEditorProps> = ({ activeTab }) => {
     loadMapContent();
   }, [activeTab]);
 
-  // This is a placeholder for actual map rendering
-  // In a real implementation, you would parse the TMX file and render the map
-  const renderPlaceholder = () => {
+  // Get container dimensions for the map renderer
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const updateDimensions = () => {
+        if (editorRef.current) {
+          setDimensions({
+            width: editorRef.current.clientWidth,
+            height: editorRef.current.clientHeight
+          });
+        }
+      };
+
+      // Initial dimensions
+      updateDimensions();
+
+      // Update dimensions on resize
+      const resizeObserver = new ResizeObserver(updateDimensions);
+      const currentRef = editorRef.current;
+      resizeObserver.observe(currentRef);
+
+      return () => {
+        if (currentRef) {
+          resizeObserver.unobserve(currentRef);
+        }
+      };
+    }
+  }, []);
+
+  // Render the appropriate content
+  const renderContent = () => {
     if (isLoading) {
       return <div className="map-loading">Loading map...</div>;
     }
@@ -67,16 +97,13 @@ export const MapEditor: React.FC<MapEditorProps> = ({ activeTab }) => {
       );
     }
 
-    if (mapContent) {
-      // Display basic information about the map
-      // In a real implementation, you would render the actual map
+    if (mapContent && activeTab.path.endsWith('.tmx')) {
       return (
-        <div className="map-info">
-          <h3>Map: {activeTab.name}</h3>
-          <p>Path: {activeTab.path}</p>
-          <p>This is a placeholder for the actual map rendering</p>
-          <p>In a real implementation, the map would be rendered here</p>
-        </div>
+        <MapRenderer 
+          mapContent={mapContent} 
+          width={dimensions.width} 
+          height={dimensions.height} 
+        />
       );
     }
 
@@ -89,13 +116,8 @@ export const MapEditor: React.FC<MapEditorProps> = ({ activeTab }) => {
   };
 
   return (
-    <div className="map-editor">
-      {renderPlaceholder()}
-      <canvas 
-        ref={canvasRef} 
-        className="map-canvas"
-        style={{ display: mapContent && !error ? 'block' : 'none' }}
-      />
+    <div className="map-editor" ref={editorRef}>
+      {renderContent()}
     </div>
   );
 };
