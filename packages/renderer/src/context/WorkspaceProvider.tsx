@@ -48,12 +48,6 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
     }
   }, [loadDirectory]);
 
-  // Function to refresh the current workspace
-  const refreshWorkspace = useCallback(async () => {
-    if (!workspace) return;
-    await loadWorkspaceFiles(workspace.path);
-  }, [workspace, loadWorkspaceFiles]);
-
   // Function to select a workspace directory
   const selectWorkspace = useCallback(async () => {
     setIsLoading(true);
@@ -89,6 +83,25 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
     }
   }, [loadWorkspaceFiles]);
 
+  // Function to refresh the current workspace
+  const refreshWorkspace = useCallback(async () => {
+    if (!workspace) return;
+    await loadWorkspaceFiles(workspace.path);
+  }, [workspace, loadWorkspaceFiles]);
+
+  // Function to change workspace (clear current and select new)
+  const changeWorkspace = useCallback(async () => {
+    // Clear current workspace
+    setWorkspace(null);
+    setFiles([]);
+    
+    // Remove from localStorage
+    localStorage.removeItem('workspace');
+    
+    // Allow user to select a new workspace
+    await selectWorkspace();
+  }, [selectWorkspace]);
+
   // Load workspace from localStorage on initial render
   useEffect(() => {
     const savedWorkspace = localStorage.getItem('workspace');
@@ -111,6 +124,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
     error,
     selectWorkspace,
     refreshWorkspace,
+    changeWorkspace,
     loadDirectory
   };
 

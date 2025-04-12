@@ -8,6 +8,7 @@ export interface WorkspaceContextType {
   error: string | null;
   selectWorkspace: () => Promise<void>;
   refreshWorkspace: () => Promise<void>;
+  changeWorkspace: () => Promise<void>;
   loadDirectory: (path: string) => Promise<FileItem[]>;
 }
 

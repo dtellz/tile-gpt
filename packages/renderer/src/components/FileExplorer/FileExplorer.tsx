@@ -8,7 +8,7 @@ interface FileExplorerProps {
 }
 
 export const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
-  const { workspace, files, isLoading, selectWorkspace, refreshWorkspace } = useWorkspace();
+  const { workspace, files, isLoading, selectWorkspace, refreshWorkspace, changeWorkspace } = useWorkspace();
 
   return (
     <div className="file-explorer">
@@ -23,6 +23,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({ onFileSelect }) => {
                 onClick={refreshWorkspace}
               >
                 🔄
+              </button>
+              <button 
+                className="action-button" 
+                title="Change Workspace"
+                onClick={changeWorkspace}
+              >
+                📁
               </button>
               <span className="workspace-name" title={workspace.path}>
                 {workspace.name}
@@ -135,10 +142,14 @@ const FileTreeItem: React.FC<FileTreeItemProps> = ({
         className={`file-item-header ${item.type}`} 
         onClick={toggleExpand}
       >
-        <span className={`icon ${item.type}`}>
-          {getFileIcon()}
-        </span>
-        <span className="file-name">{item.name}</span>
+        {item.name !== '.DS_Store' &&   (
+          <>
+            <span className={`icon ${item.type}`}>
+              {getFileIcon()}
+            </span>
+            <span className="file-name">{item.name}</span>
+          </>
+        )}
       </div>
       
       {item.type === 'folder' && expanded && (
