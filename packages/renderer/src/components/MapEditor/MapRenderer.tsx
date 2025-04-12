@@ -13,10 +13,18 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
   const mapRef = useRef<TmxMap | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // State for panning
+  // State for panning and zooming
   const [viewPosition, setViewPosition] = useState({ x: 0, y: 0 });
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  
+  // Constants for zoom
+  const MIN_ZOOM = 0.1;
+  const MAX_ZOOM = 5;
+  const ZOOM_SPEED = 0.001;
+  
+
   
   // Function to render the map using canvas - wrapped in useCallback to prevent recreation on each render
   const renderMap = useCallback((map: TmxMap) => {
@@ -30,9 +38,19 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     ctx.fillStyle = '#1e1e1e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Apply the view position (panning)
+    // Apply the view position (panning) and zoom
     ctx.save();
-    ctx.translate(viewPosition.x, viewPosition.y);
+    
+    // First translate to the center of the canvas
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    ctx.translate(centerX, centerY);
+    
+    // Apply zoom around the center
+    ctx.scale(zoomLevel, zoomLevel);
+    
+    // Then translate back and apply the pan offset
+    ctx.translate(-centerX + viewPosition.x / zoomLevel, -centerY + viewPosition.y / zoomLevel);
     
     // Draw a checkerboard pattern for the background
     ctx.fillStyle = '#2c2c2c';
@@ -106,7 +124,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     
     // Draw a mini-map or navigation indicator in the corner
     drawNavigationIndicator(ctx, map, canvas.width, canvas.height);
-  }, [viewPosition]);
+  }, [viewPosition, zoomLevel]);
   
   // Draw a small navigation indicator in the corner - memoized to prevent recreation
   const drawNavigationIndicator = useCallback((ctx: CanvasRenderingContext2D, map: TmxMap, canvasWidth: number, canvasHeight: number) => {
@@ -146,7 +164,12 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
       Math.min(viewportWidth, indicatorSize),
       Math.min(viewportHeight, indicatorSize)
     );
-  }, [viewPosition]);
+    
+    // Display zoom level
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '10px Arial';
+    ctx.fillText(`Zoom: ${Math.round(zoomLevel * 100)}%`, x + 5, y + 15);
+  }, [viewPosition, zoomLevel]);
   
   // Set up canvas dimensions when they change
   useEffect(() => {
@@ -159,7 +182,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     if (mapRef.current) {
       renderMap(mapRef.current);
     }
-  }, [width, height, viewPosition, renderMap]);
+  }, [width, height, viewPosition, zoomLevel, renderMap]);
   
   // Parse and render map when content changes
   useEffect(() => {
@@ -187,11 +210,40 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     const wheelHandler = (e: WheelEvent) => {
       e.preventDefault();
       
-      // Update the view position
-      setViewPosition(prev => ({
-        x: prev.x - e.deltaX,
-        y: prev.y - e.deltaY
-      }));
+      // Check if Ctrl key is pressed (for both Mac and Windows/Linux)
+      const isCtrlPressed = e.ctrlKey || e.metaKey;
+      
+      if (isCtrlPressed) {
+        // Handle zooming
+        const delta = -e.deltaY * ZOOM_SPEED;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomLevel + delta));
+        
+        // Get mouse position relative to canvas
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Calculate the point to zoom around (mouse position)
+        const zoomPoint = {
+          x: (mouseX - viewPosition.x) / zoomLevel,
+          y: (mouseY - viewPosition.y) / zoomLevel
+        };
+        
+        // Calculate new view position to zoom around mouse
+        const newPosition = {
+          x: mouseX - zoomPoint.x * newZoom,
+          y: mouseY - zoomPoint.y * newZoom
+        };
+        
+        setZoomLevel(newZoom);
+        setViewPosition(newPosition);
+      } else {
+        // Regular panning
+        setViewPosition(prev => ({
+          x: prev.x - e.deltaX,
+          y: prev.y - e.deltaY
+        }));
+      }
     };
     
     // Add the event listener with { passive: false }
@@ -201,7 +253,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     return () => {
       canvas.removeEventListener('wheel', wheelHandler);
     };
-  }, []);
+  }, [zoomLevel, viewPosition]);
   
   if (error) {
     return (
@@ -243,18 +295,49 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
   // We've removed the handleWheel function since we're using the native event listener
   
   return (
-    <canvas 
-      ref={canvasRef} 
-      className="map-renderer"
-      width={width}
-      height={height}
-      style={{ width: `${width}px`, height: `${height}px`, cursor: isDragging ? 'grabbing' : 'grab' }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      // We don't need the React onWheel handler anymore as we're using the native one
-      // with { passive: false } in the useEffect
-    />
+    <div className="map-container">
+      <canvas 
+        ref={canvasRef} 
+        className="map-renderer"
+        width={width}
+        height={height}
+        style={{ width: `${width}px`, height: `${height}px`, cursor: isDragging ? 'grabbing' : 'grab' }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        // We don't need the React onWheel handler anymore as we're using the native one
+        // with { passive: false } in the useEffect
+      />
+      <div className="map-controls">
+        <button 
+          className="zoom-button" 
+          onClick={() => setZoomLevel(prev => Math.min(MAX_ZOOM, prev + 0.1))}
+          title="Zoom In"
+        >
+          +
+        </button>
+        <button 
+          className="zoom-button" 
+          onClick={() => setZoomLevel(prev => Math.max(MIN_ZOOM, prev - 0.1))}
+          title="Zoom Out"
+        >
+          -
+        </button>
+        <button 
+          className="zoom-button" 
+          onClick={() => {
+            setZoomLevel(1);
+            setViewPosition({ x: 0, y: 0 });
+          }}
+          title="Reset View"
+        >
+          ↺
+        </button>
+      </div>
+      <div className="zoom-info">
+        {Math.round(zoomLevel * 100)}%
+      </div>
+    </div>
   );
 };
