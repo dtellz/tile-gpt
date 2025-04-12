@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { parseTmx, TmxMap } from '../../utils/tmxParser';
 import './MapRenderer.css';
 
@@ -18,8 +18,8 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   
-  // Function to render the map using canvas
-  const renderMap = (map: TmxMap) => {
+  // Function to render the map using canvas - wrapped in useCallback to prevent recreation on each render
+  const renderMap = useCallback((map: TmxMap) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -106,10 +106,10 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     
     // Draw a mini-map or navigation indicator in the corner
     drawNavigationIndicator(ctx, map, canvas.width, canvas.height);
-  };
+  }, [viewPosition]);
   
-  // Draw a small navigation indicator in the corner
-  const drawNavigationIndicator = (ctx: CanvasRenderingContext2D, map: TmxMap, canvasWidth: number, canvasHeight: number) => {
+  // Draw a small navigation indicator in the corner - memoized to prevent recreation
+  const drawNavigationIndicator = useCallback((ctx: CanvasRenderingContext2D, map: TmxMap, canvasWidth: number, canvasHeight: number) => {
     const indicatorSize = 100;
     const padding = 10;
     const x = canvasWidth - indicatorSize - padding;
@@ -146,7 +146,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
       Math.min(viewportWidth, indicatorSize),
       Math.min(viewportHeight, indicatorSize)
     );
-  };
+  }, [viewPosition]);
   
   // Set up canvas dimensions when they change
   useEffect(() => {
@@ -159,7 +159,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     if (mapRef.current) {
       renderMap(mapRef.current);
     }
-  }, [width, height, viewPosition]);
+  }, [width, height, viewPosition, renderMap]);
   
   // Parse and render map when content changes
   useEffect(() => {
@@ -176,7 +176,32 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
       console.error('Error parsing map:', error);
       setError(`Error parsing map: ${error instanceof Error ? error.message : String(error)}`);
     }
-  }, [mapContent]);
+  }, [mapContent, renderMap]);
+  
+  // Set up wheel event listener with { passive: false } to allow preventDefault
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    // Function to handle wheel events
+    const wheelHandler = (e: WheelEvent) => {
+      e.preventDefault();
+      
+      // Update the view position
+      setViewPosition(prev => ({
+        x: prev.x - e.deltaX,
+        y: prev.y - e.deltaY
+      }));
+    };
+    
+    // Add the event listener with { passive: false }
+    canvas.addEventListener('wheel', wheelHandler, { passive: false });
+    
+    // Clean up the event listener when component unmounts
+    return () => {
+      canvas.removeEventListener('wheel', wheelHandler);
+    };
+  }, []);
   
   if (error) {
     return (
@@ -215,16 +240,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     setIsDragging(false);
   };
   
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    // Prevent the default scroll behavior
-    e.preventDefault();
-    
-    // Adjust the view position based on the wheel delta
-    setViewPosition(prev => ({
-      x: prev.x - e.deltaX,
-      y: prev.y - e.deltaY
-    }));
-  };
+  // We've removed the handleWheel function since we're using the native event listener
   
   return (
     <canvas 
@@ -237,7 +253,8 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
-      onWheel={handleWheel}
+      // We don't need the React onWheel handler anymore as we're using the native one
+      // with { passive: false } in the useEffect
     />
   );
 };
