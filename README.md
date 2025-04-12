@@ -1,5 +1,9 @@
 # TILE-GPT
 
+<p align="center">
+  <img src="./tile-gpt.png" width="400">
+</p>
+
 ## Get started
 
 Follow these steps to get started with the project:
