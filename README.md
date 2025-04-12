@@ -4,6 +4,28 @@
   <img src="./tile-gpt.png" width="400">
 </p>
 
+# Tile-GPT
+
+  A next-gen tile map editor that blends natural language with precision level design.
+
+## 🧙‍♂️ Why?
+
+Level design should feel like storytelling — not just tile placement. Tile-GPT lets you talk to your world, edit with intent, and spark creative ideas with AI assistance.
+
+## Overview
+
+Tile-GPT is an AI-powered, next-gen tile map editor that helps you generate, edit, and enhance 2D game maps using GPT-based prompts. Inspired by Tiled and tools like Cursor for code, Tile-GPT combines the creative flexibility of natural language with the precision of a level design tool.
+
+## Features
+
+- 📂 Load and edit Tiled-compatible JSON maps
+- 💬 Use natural language to describe changes
+- 💻 Powered by GPT - supports context-aware transformations
+- 🎮 RPG-ready: supports objects, enemies, terrain, and more
+- 📈 Export updated maps back to JSON
+- 💻 Built with Electron + React + Pixi.js for performance and cross-platform support
+
+
 ## Get started
 
 Follow these steps to get started with the project:
