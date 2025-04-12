@@ -31,7 +31,6 @@
     "playwright": "^1.51.1"
   },
   "dependencies": {
-    "@app/main": "*",
-    "pixi.js": "^8.9.1"
+    "@app/main": "*"
   }
 }
