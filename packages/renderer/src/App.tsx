@@ -7,10 +7,12 @@ import { TabsManager } from './components/Tabs';
 import { ChatInterface } from './components/ChatInterface';
 import { StatusBar } from './components/StatusBar';
 import { LogViewer } from './components/LogViewer';
+import { ThemeToggle } from './components/ThemeToggle';
 
 // Import context and hooks
 import { WorkspaceProvider } from './context/WorkspaceProvider';
 import { LogProvider } from './context/LogContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { useWorkspace } from './hooks/useWorkspaceContext';
 
 // Import types
@@ -101,6 +103,9 @@ function AppContent() {
           <div className="menu-item">View</div>
           <div className="menu-item">Help</div>
         </div>
+        <div className="top-bar-actions">
+          <ThemeToggle />
+        </div>
       </div>
       
       {/* Main Content */}
@@ -131,20 +136,22 @@ function AppContent() {
       </div>
       
       {/* Status Bar */}
-      <StatusBar />
+      <StatusBar workspacePath={useWorkspace().workspacePath} />
     </div>
   );
 }
 
-// Wrap the app with the WorkspaceProvider and LogProvider
+// Wrap the app with providers
 function App() {
   return (
-    <WorkspaceProvider>
-      <LogProvider>
-        <AppContent />
-        <LogViewer />
-      </LogProvider>
-    </WorkspaceProvider>
+    <ThemeProvider>
+      <WorkspaceProvider>
+        <LogProvider>
+          <AppContent />
+          <LogViewer />
+        </LogProvider>
+      </WorkspaceProvider>
+    </ThemeProvider>
   );
 }
 

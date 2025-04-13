@@ -3,20 +3,28 @@ import './StatusBar.css';
 
 interface StatusBarProps {
   status?: string;
-  position?: { x: number; y: number };
-  zoom?: number;
+  workspacePath?: string;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({ 
-  status = 'Ready', 
-  position = { x: 0, y: 0 }, 
-  zoom = 100 
+  status = 'Ready',
+  workspacePath = ''
 }) => {
   return (
     <div className="status-bar">
-      <div className="status-item">{status}</div>
-      <div className="status-item">Position: {position.x},{position.y}</div>
-      <div className="status-item">Zoom: {zoom}%</div>
+      <div className="status-item">
+        <span className="status-item-icon">●</span>
+        {status}
+      </div>
+      {workspacePath && (
+        <div className="status-item">
+          <span className="status-item-icon">📁</span>
+          {workspacePath.split('/').pop()}
+        </div>
+      )}
+      <div className="status-actions">
+        <div className="status-item">Version: 1.0.0</div>
+      </div>
     </div>
   );
 };
