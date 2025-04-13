@@ -119,6 +119,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
 
   const contextValue: WorkspaceContextType = {
     workspace,
+    workspacePath: workspace?.path || '',
     files,
     isLoading,
     error,

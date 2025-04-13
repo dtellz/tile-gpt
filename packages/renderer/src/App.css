@@ -18,6 +18,8 @@
   --accent-hover: #1177bb;
   --tab-active: #1e1e1e;
   --tab-inactive: #2d2d2d;
+  --chat-user-bg: #3498db;
+  --chat-assistant-bg: #ecf0f1;
 }
 
 html, body, #root {
@@ -50,6 +52,7 @@ html, body, #root {
 .app-title {
   font-weight: bold;
   margin-right: 20px;
+  color: #3498db;
 }
 
 .menu-bar {
@@ -85,14 +88,10 @@ html, body, #root {
 }
 
 .left-sidebar {
-  width: 250px;
+  width: 280px;
 }
 
-.right-sidebar {
-  width: 300px;
-  border-left: 1px solid var(--border-color);
-  border-right: none;
-}
+/* Right sidebar removed */
 
 /* File Explorer */
 .file-explorer {
@@ -212,85 +211,57 @@ html, body, #root {
   position: relative;
 }
 
-.map-editor {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-}
-
-.map-canvas {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Chat Interface Container */
+.editor-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
   background-color: var(--bg-primary);
-  background-image: 
-    linear-gradient(45deg, #2c2c2c 25%, transparent 25%), 
-    linear-gradient(-45deg, #2c2c2c 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, #2c2c2c 75%), 
-    linear-gradient(-45deg, transparent 75%, #2c2c2c 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }
 
-.map-placeholder {
-  text-align: center;
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 5px;
-}
-
-/* Properties Panel */
-.properties-panel {
+/* Info Panel */
+.info-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 16px;
+  color: var(--text-primary);
+  overflow-y: auto;
 }
 
-.panel-header {
-  padding: 5px 10px;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+.info-panel h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: var(--accent-color);
 }
 
-.panel-content {
-  padding: 10px;
-  overflow: auto;
-  flex: 1;
+.info-panel h4 {
+  font-size: 16px;
+  margin-top: 16px;
+  margin-bottom: 8px;
 }
 
-.property-group {
-  margin-top: 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 3px;
-  overflow: hidden;
+.info-panel p {
+  margin-bottom: 12px;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
-.property-group h4 {
-  padding: 5px 10px;
-  background-color: var(--bg-tertiary);
-  font-size: 12px;
-  font-weight: normal;
+.info-panel ul {
+  margin-left: 20px;
+  margin-bottom: 12px;
 }
 
-.property-item {
-  display: flex;
-  padding: 5px 10px;
+.info-panel li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.info-panel hr {
+  border: none;
   border-top: 1px solid var(--border-color);
-  font-size: 12px;
-}
-
-.property-label {
-  flex: 1;
-  color: var(--text-secondary);
-}
-
-.property-value {
-  flex: 2;
+  margin: 16px 0;
 }
 
 /* Status Bar */

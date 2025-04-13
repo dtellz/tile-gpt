@@ -8,8 +8,8 @@ interface LogProviderProps {
 
 export const LogProvider: React.FC<LogProviderProps> = ({ children }) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  // Make the log viewer visible by default
-  const [isVisible, setIsVisible] = useState<boolean>(true);
+  // Hide the log viewer by default
+  const [isVisible, setIsVisible] = useState<boolean>(false);
   
   // Function to add a new log entry
   const addLog = useCallback((message: string, level: LogLevel) => {

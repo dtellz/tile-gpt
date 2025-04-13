@@ -3,6 +3,7 @@ import { FileItem, WorkspaceInfo } from '../types';
 
 export interface WorkspaceContextType {
   workspace: WorkspaceInfo | null;
+  workspacePath: string;
   files: FileItem[];
   isLoading: boolean;
   error: string | null;

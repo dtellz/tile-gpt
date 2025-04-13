@@ -4,8 +4,7 @@ import './App.css';
 // Import components
 import { FileExplorer } from './components/FileExplorer';
 import { TabsManager } from './components/Tabs';
-import { MapEditor } from './components/MapEditor';
-import { PropertiesPanel } from './components/PropertiesPanel';
+import { ChatInterface } from './components/ChatInterface';
 import { StatusBar } from './components/StatusBar';
 import { LogViewer } from './components/LogViewer';
 
@@ -122,16 +121,13 @@ function AppContent() {
             />
           )}
           
-          {/* Editor */}
+          {/* Chat Interface */}
           <div className="editor-container">
-            <MapEditor activeTab={activeTab} />
+            <ChatInterface activeTab={activeTab} />
           </div>
         </div>
         
-        {/* Right Sidebar */}
-        <div className="sidebar right-sidebar">
-          <PropertiesPanel activeTab={activeTab} />
-        </div>
+        {/* Right sidebar removed */}
       </div>
       
       {/* Status Bar */}
