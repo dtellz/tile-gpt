@@ -13,6 +13,7 @@ interface FileSystemAPI {
     modifiedTime: string;
   }[]>;
   readFile: (path: string) => Promise<string>;
+  readBinaryFile: (path: string) => Promise<string>; // Returns base64 encoded string
   pathExists: (path: string) => Promise<boolean>;
 }
 
@@ -22,6 +23,7 @@ const encodedNames = {
   selectDirectory: btoa('selectDirectory'),
   readDirectory: btoa('readDirectory'),
   readFile: btoa('readFile'),
+  readBinaryFile: btoa('readBinaryFile'),
   pathExists: btoa('pathExists')
 };
 
@@ -33,4 +35,5 @@ const w = window as unknown as ElectronWindow;
 export const selectDirectory = w[encodedNames.selectDirectory] as FileSystemAPI['selectDirectory'];
 export const readDirectory = w[encodedNames.readDirectory] as FileSystemAPI['readDirectory'];
 export const readFile = w[encodedNames.readFile] as FileSystemAPI['readFile'];
+export const readBinaryFile = w[encodedNames.readBinaryFile] as FileSystemAPI['readBinaryFile'];
 export const pathExists = w[encodedNames.pathExists] as FileSystemAPI['pathExists'];

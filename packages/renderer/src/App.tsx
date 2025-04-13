@@ -7,9 +7,11 @@ import { TabsManager } from './components/Tabs';
 import { MapEditor } from './components/MapEditor';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { StatusBar } from './components/StatusBar';
+import { LogViewer } from './components/LogViewer';
 
 // Import context and hooks
 import { WorkspaceProvider } from './context/WorkspaceProvider';
+import { LogProvider } from './context/LogContext';
 import { useWorkspace } from './hooks/useWorkspaceContext';
 
 // Import types
@@ -138,11 +140,14 @@ function AppContent() {
   );
 }
 
-// Wrap the app with the WorkspaceProvider
+// Wrap the app with the WorkspaceProvider and LogProvider
 function App() {
   return (
     <WorkspaceProvider>
-      <AppContent />
+      <LogProvider>
+        <AppContent />
+        <LogViewer />
+      </LogProvider>
     </WorkspaceProvider>
   );
 }

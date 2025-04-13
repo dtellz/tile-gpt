@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { parseTmx, TmxMap } from '../../utils/tmxParser';
+import { parseTmx, TmxMap, getTilesetForTile, getLocalTileId } from '../../utils/tmxParser';
+import { loadTileset, loadTilesetImage, getTileSourceRect } from '../../utils/tilesetLoader';
+import { useLog } from '../../hooks/useLogContext';
 import './MapRenderer.css';
 
 interface MapRendererProps {
@@ -12,6 +14,12 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mapRef = useRef<TmxMap | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { addLog } = useLog();
+  
+  // State for tracking loaded tilesets and images
+  const [tilesetImages, setTilesetImages] = useState<Map<string, HTMLImageElement>>(new Map());
+  const [isLoadingTilesets, setIsLoadingTilesets] = useState<boolean>(false);
+  const [workspacePath, setWorkspacePath] = useState<string>('');
   
   // State for panning and zooming
   const [viewPosition, setViewPosition] = useState({ x: 0, y: 0 });
@@ -66,7 +74,7 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     // Get map dimensions
     const { tileWidth, tileHeight } = map;
     
-    // Define colors for different layers
+    // Define colors for different layers (fallback for when images aren't available)
     const layerColors = [
       '#4a90e2', // Blue
       '#50e3c2', // Teal
@@ -81,11 +89,11 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     map.layers.forEach((layer, layerIndex) => {
       if (!layer.visible) return;
       
-      // Get color for this layer
+      // Get color for this layer (fallback)
       const color = layerColors[layerIndex % layerColors.length];
       
       // Set transparency for overlapping layers
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = layer.name.toLowerCase().includes('background') ? 1.0 : 0.8;
       
       // Render tiles
       for (let y = 0; y < layer.height; y++) {
@@ -95,23 +103,44 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
           
           if (tileId === 0) continue; // Empty tile
           
-          // Draw a colored rectangle for this tile
-          ctx.fillStyle = color;
-          ctx.fillRect(
-            x * tileWidth, 
-            y * tileHeight, 
-            tileWidth - 1, // Leave a small gap between tiles
-            tileHeight - 1
-          );
+          // Try to find the tileset for this tile
+          const tileset = getTilesetForTile(tileId, map.tilesets);
           
-          // Draw tile ID for debugging
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '8px Arial';
-          ctx.fillText(
-            tileId.toString(), 
-            x * tileWidth + 2, 
-            y * tileHeight + 10
-          );
+          if (tileset && tilesetImages.has(tileset.source)) {
+            // We have the tileset image, draw the actual tile
+            const image = tilesetImages.get(tileset.source);
+            if (image) {
+              // Calculate the local tile ID
+              const localTileId = getLocalTileId(tileId, tileset);
+              
+              // Get the source rectangle for this tile
+              const sourceRect = getTileSourceRect(tileset, localTileId);
+              
+              if (sourceRect) {
+                // Draw the tile from the tileset image
+                ctx.drawImage(
+                  image,
+                  sourceRect.x,
+                  sourceRect.y,
+                  sourceRect.width,
+                  sourceRect.height,
+                  x * tileWidth,
+                  y * tileHeight,
+                  tileWidth,
+                  tileHeight
+                );
+              } else {
+                // Fallback to colored rectangle if source rect couldn't be calculated
+                drawFallbackTile(ctx, x, y, tileWidth, tileHeight, tileId, color);
+              }
+            } else {
+              // Fallback to colored rectangle if image is null
+              drawFallbackTile(ctx, x, y, tileWidth, tileHeight, tileId, color);
+            }
+          } else {
+            // Fallback to colored rectangle if tileset or image not found
+            drawFallbackTile(ctx, x, y, tileWidth, tileHeight, tileId, color);
+          }
         }
       }
     });
@@ -124,7 +153,28 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     
     // Draw a mini-map or navigation indicator in the corner
     drawNavigationIndicator(ctx, map, canvas.width, canvas.height);
-  }, [viewPosition, zoomLevel]);
+  }, [viewPosition, zoomLevel, tilesetImages]);
+  
+  // Helper function to draw a fallback tile when the image isn't available
+  const drawFallbackTile = (ctx: CanvasRenderingContext2D, x: number, y: number, tileWidth: number, tileHeight: number, tileId: number, color: string) => {
+    // Draw a colored rectangle for this tile
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      x * tileWidth, 
+      y * tileHeight, 
+      tileWidth - 1, // Leave a small gap between tiles
+      tileHeight - 1
+    );
+    
+    // Draw tile ID for debugging
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '8px Arial';
+    ctx.fillText(
+      tileId.toString(), 
+      x * tileWidth + 2, 
+      y * tileHeight + 10
+    );
+  };
   
   // Draw a small navigation indicator in the corner - memoized to prevent recreation
   const drawNavigationIndicator = useCallback((ctx: CanvasRenderingContext2D, map: TmxMap, canvasWidth: number, canvasHeight: number) => {
@@ -182,7 +232,69 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
     if (mapRef.current) {
       renderMap(mapRef.current);
     }
-  }, [width, height, viewPosition, zoomLevel, renderMap]);
+  }, [width, height, viewPosition, zoomLevel]);
+  
+  // Get the workspace path from localStorage
+  useEffect(() => {
+    const savedWorkspace = localStorage.getItem('workspace');
+    if (savedWorkspace) {
+      try {
+        const parsedWorkspace = JSON.parse(savedWorkspace);
+        setWorkspacePath(parsedWorkspace.path);
+        addLog('Workspace path loaded', 'info');
+      } catch (err) {
+        addLog(`Failed to get workspace path: ${err}`, 'error');
+      }
+    } else {
+      addLog('No workspace selected. Tileset images cannot be loaded.', 'warning');
+    }
+  }, [addLog]);
+
+  // Function to load all tilesets for a map
+  const loadMapTilesets = useCallback(async (map: TmxMap) => {
+    if (!workspacePath) {
+      addLog('No workspace path available. Cannot load tilesets.', 'error');
+      return;
+    }
+
+    setIsLoadingTilesets(true);
+    const newImages = new Map<string, HTMLImageElement>();
+    
+    try {
+      // Process each tileset reference in the map
+      for (const tilesetRef of map.tilesets) {
+        addLog(`Loading tileset: ${tilesetRef.source}`, 'info');
+        
+        // Load the tileset
+        const tileset = await loadTileset(tilesetRef.source, tilesetRef.firstGid, workspacePath);
+        if (!tileset) {
+          addLog(`Failed to load tileset: ${tilesetRef.source}`, 'warning');
+          continue;
+        }
+        
+        // Load the tileset image
+        if (tileset.imageSource) {
+          const image = await loadTilesetImage(tileset, workspacePath);
+          if (image) {
+            newImages.set(tileset.source, image);
+            addLog(`Loaded tileset image: ${tileset.imageSource}`, 'success');
+          } else {
+            addLog(`Failed to load tileset image: ${tileset.imageSource}`, 'warning');
+          }
+        }
+      }
+      
+      setTilesetImages(newImages);
+      addLog(`Loaded ${newImages.size} tileset images`, 'success');
+    } catch (err) {
+      addLog(`Error loading tilesets: ${err}`, 'error');
+    } finally {
+      setIsLoadingTilesets(false);
+    }
+  }, [workspacePath, addLog]);
+
+  // Ref to track if tilesets have been loaded for the current map content
+  const tilesetLoadedRef = useRef<boolean>(false);
   
   // Parse and render map when content changes
   useEffect(() => {
@@ -193,13 +305,27 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
       const map = parseTmx(mapContent);
       mapRef.current = map;
       
+      // Load tilesets if we have a workspace path and haven't loaded them yet for this map
+      if (workspacePath && !tilesetLoadedRef.current) {
+        loadMapTilesets(map);
+        tilesetLoadedRef.current = true;
+      }
+      
       // Render the map
       renderMap(map);
     } catch (error) {
       console.error('Error parsing map:', error);
       setError(`Error parsing map: ${error instanceof Error ? error.message : String(error)}`);
+      addLog(`Error parsing map: ${error instanceof Error ? error.message : String(error)}`, 'error');
     }
-  }, [mapContent, renderMap]);
+    // Only re-run this effect when mapContent or workspacePath changes
+    // renderMap and loadMapTilesets are memoized functions that shouldn't trigger re-renders
+  }, [mapContent, workspacePath, addLog, renderMap]);
+  
+  // Reset the tilesetLoaded ref when mapContent changes
+  useEffect(() => {
+    tilesetLoadedRef.current = false;
+  }, [mapContent]);
   
   // Set up wheel event listener with { passive: false } to allow preventDefault
   useEffect(() => {
@@ -309,6 +435,12 @@ export const MapRenderer: React.FC<MapRendererProps> = ({ mapContent, width, hei
         // We don't need the React onWheel handler anymore as we're using the native one
         // with { passive: false } in the useEffect
       />
+      {isLoadingTilesets && (
+        <div className="tileset-loading-indicator">
+          <div className="loading-spinner"></div>
+          <div>Loading tileset images...</div>
+        </div>
+      )}
       <div className="map-controls">
         <button 
           className="zoom-button" 
