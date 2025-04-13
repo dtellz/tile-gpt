@@ -25,24 +25,22 @@
   transform: scale(1.05);
 }
 
-.theme-icon {
-  width: 22px;
-  height: 22px;
-  stroke: currentColor;
-  fill: none;
+.icon-container {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.3s ease;
 }
 
 /* Light mode animation */
-[data-theme='light'] .theme-toggle-button .theme-icon {
+[data-theme='light'] .theme-toggle-button .icon-container {
   animation: spin-in 0.5s ease;
-  color: #ff9500; /* Orange sun color */
 }
 
 /* Dark mode animation */
-[data-theme='dark'] .theme-toggle-button .theme-icon {
+[data-theme='dark'] .theme-toggle-button .icon-container {
   animation: spin-in 0.5s ease;
-  color: #8e8ef7; /* Purple-blue moon color */
 }
 
 @keyframes spin-in {
@@ -56,6 +54,6 @@
   }
 }
 
-.theme-toggle-button:hover .theme-icon {
+.theme-toggle-button:hover .icon-container {
   transform: scale(1.1);
 }
